@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2020 Crown Copyright
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v2
-name: gaffer-road-traffic
-description: A Gaffer instance containing sample GB road traffic data from the Department of Transport
-type: application
-version: 0.8.1 # managed version
-appVersion: 1.13.4 
-home: https://github.com/gchq/Gaffer
-sources:
-- https://github.com/gchq/gaffer-docker
-- https://data.gov.uk/dataset/208c0e7b-353f-4e2d-8b7a-1a7118467acc/gb-road-traffic-counts
-dependencies:
-- name: gaffer
-  version: ^0.8.1 # managed version
-  repository: file://../gaffer/
+set -e
+
+project_root="$( cd $(dirname $(dirname $0)) > /dev/null 2>&1 && pwd )"
+for chart in ${project_root}/kubernetes/*; do	
+    if [ -f "${chart}/Chart.yaml" ]; then	
+        flags=''	
+        [ ! -f "${chart}/values-insecure.yaml" ] || flags="-f ${chart}/values-insecure.yaml"
+        
+        helm lint ${flags} ${chart}	
+        helm template test ${flags} ${chart}	
+    fi	
+done
